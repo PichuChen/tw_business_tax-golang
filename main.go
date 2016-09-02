@@ -68,26 +68,183 @@ type TXTRecord struct {
 
 }
 
-func ParseTXTFile() {
-	file, err := os.Open("54834795.TXT")
-	if err != nil {
-		fmt.Errorf("%v", err)
-		return
-	}
+type TETRecord struct {
+	FormatCode       string // len: 1
+	reserve1         string // len: 2
+	FileSerialNumber string // len: 8
+	VATNumber        string // len: 8
+	YearMonth        string // len: 5
+	ReturnCode       string // len: 1
+	TaxSerialNumber  string // len: 9
+	reserve2         string // len: 5
+	CollectiveCode   string // len: 1
+	reserve3         string // len: 6
+	InvoiceAmounts   int    // len: 10
+	// 銷項 應稅 銷售額
+	TriplicateInvoiceTaxableSaleAmounts   int // len: 12, code: 1
+	CashRegisterInvoiceTaxableSaleAmounts int // len: 12, code: 5
+	DuplicateInvoiceTaxableSaleAmounts    int // len: 12, code: 9
+	NonInvoiceTaxableSaleAmounts          int // len: 12, code: 13
+	ReturnsTaxableSaleAmounts             int // len: 12, code: 17
+	TotalTaxableSaleAmounts               int // len: 12, code: 21
+	// 銷項 應稅 稅額
+	TriplicateInvoiceTaxableTaxAmounts   int // len: 10, code: 2
+	CashRegisterInvoiceTaxableTaxAmounts int // len: 10, code: 6
+	DuplicateInvoiceTaxableTaxAmounts    int // len: 10, code: 10
+	NonInvoiceTaxableTaxAmounts          int // len: 10, code: 14
+	ReturnsTaxableTaxAmounts             int // len: 10, code: 18
+	TotalTaxableTaxAmounts               int // len: 10, code: 22
+
+	Code82Amounts int // len: 12, code: 82
+	// 銷項 零稅率銷售額
+	NoCostumsOutputAmounts int // len: 12, code: 7
+	reserve4               int // len: 12
+	CostumsOutputAmounts   int // len: 12, code: 15
+	OutputReturnAmounts    int // len: 12, code: 19
+	OutputTotalAmounts     int // len: 12, code: 23
+
+	// 銷稅 免稅 銷售額
+	TriplicateInvoiceTaxFreeSaleAmounts   int // len: 12, code: 4
+	CashRegisterInvoiceTaxFreeSaleAmounts int // len: 12, code: 8
+	DuplicateInvoiceTaxFreeSaleAmounts    int // len: 12, code: 12
+	NonInvoiceTaxFreeSaleAmounts          int // len: 12, code: 16
+	ReturnsTaxFreeSaleAmounts             int // len: 12, code: 20
+	TotalTaxFreeSaleAmounts               int // len: 12, code: 24
+
+	// 特種飲食
+	SpecialFood25SaleAmounts int // len: 12, code: 52
+	SpecialFood25TaxAmounts  int // len: 10, code: 53
+	SpecialFood15SaleAmounts int // len: 12, code: 54
+	SpecialFood15TaxAmounts  int // len: 10, code: 55
+
+	// 銀行，保險及信託投資業
+	SpecialBank2SaleAmounts int // len: 12, code: 56
+	SpecialBank2TaxAmounts  int // len: 10, code: 57
+	SpecialBank5SaleAmounts int // len: 12, code: 58
+	SpecialBank5TaxAmounts  int // len: 10, code: 59
+	SpecialBank1SaleAmounts int // len: 12, code: 60
+	SpecialBank1TaxAmounts  int // len: 10, code: 61
+
+	Special0SaleAmounts        int // len: 12, code: 62
+	SpecialReturnsSaleAmounts  int // len: 12, code: 63
+	SpecialReturnsTaxAmounts   int // len: 10, code: 64
+	SubtotalSpecialSaleAmounts int // len: 12, code: 65
+	SubtotalSpecialTaxAmounts  int // len: 10, code; 66
+
+	TotalSaleAmounts            int // len: 12, code: 25
+	TotalLandSaleAmounts        int // len: 12, code: 26
+	TotalFixedAssestSaleAmounts int // len: 12, code: 27
+
+	// 應比例計算得扣抵進項金額
+	InvoiceCostCreditAmounts                     int // len: 12, code: 28
+	InvoiceFixedAssestSaleCreditAmount           int // len: 12, code: 30
+	TriplicateInvoiceCostCreditAmounts           int // len: 12, code: 32
+	TriplicateInvoiceFixedAssestSaleCreditAmount int // len: 12, code: 34
+	OtherInvoiceCostCreditAmounts                int // len: 12, code: 36
+	OtherInvoiceFixedAssestCreditAmounts         int // len: 12, code: 38
+	ReturnsCostCreditAmounts                     int // len: 12, code: 40
+	ReturnsFixedAssestCreditAmounts              int // len: 12, code: 42
+	TotalCostCreditAmounts                       int // len: 12, code: 44
+	TotalFixedAssestCreditAmounts                int // len: 12, code: 46
+
+	InvoiceCostCreditTaxAmounts                     int // len: 10, code: 29
+	InvoiceFixedAssestSaleCreditTaxAmount           int // len: 10, code: 31
+	TriplicateInvoiceCostCreditTaxAmounts           int // len: 10, code: 33
+	TriplicateInvoiceFixedAssestSaleCreditTaxAmount int // len: 10, code: 35
+	OtherInvoiceCostCreditTaxAmounts                int // len: 10, code: 37
+	OtherInvoiceFixedAssestCreditTaxAmounts         int // len: 10, code: 39
+	ReturnsCostCreditTaxAmounts                     int // len: 10, code: 41
+	ReturnsFixedAssestCreditTaxAmounts              int // len: 10, code: 43
+	TotalCostCreditTaxAmounts                       int // len: 10, code: 45
+	TotalFixedAssestCreditTaxAmounts                int // len: 10, code: 47
+
+	TotalCostIncludeNonDeductibleCreditAmounts int // len: 12, code: 48
+	TotalFixedAssestNonDeductibleCreditAmounts int // len: 12, code: 49
+
+	NonDeductibleRatio             int // len: 3, code: 50
+	DeductibleCreditTaxAmounts     int // len: 10, code: 51
+	CostumsCostAmounts             int // len: 12, code: 78
+	CostumsFixedAssestAmounts      int // len: 12, code: 80
+	ImportTaxExemptGoodsAmounts    int // len: 12, code: 73
+	ImportTaxExemptServicesAmounts int // len: 12, code: 74
+	CostumsCostTaxAmounts          int // len: 10, code: 79
+	CostumsFixedAssestTaxAmounts   int // len: 10, code: 81
+	ImportRatioServicesTaxAmounts  int // len: 10, code: 75
+	reserve5                       int // len: 10
+	reserve6                       int // len: 10
+	ImportServicesTaxAmounts       int // len: 10, code: 76
+
+	TotalSaleTaxAmounts                 int // len: 10, code: 101
+	reserve7                            int // len: 10
+	TotalImportServicesTaxAmounts       int // len: 10, code: 103
+	TotalSpecialTaxAmounts              int // len: 10, code: 104
+	AdjustmentTaxAmounts                int // len: 10, code: 105
+	SubTotal106                         int // len: 10, code: 106
+	TotalBusinessTaxPaidAmounts         int // len: 10, code: 107
+	LastPeriodExcessTaxPaidAmounts      int // len: 10, code: 108
+	Field109                            int // len: 10, code: 109
+	SubTotal110                         int // len: 10, code: 110
+	ThisPeriodTaxPayableAmounts         int // len: 10, code: 111
+	ThisPeriodExcessTaxPaidAmounts      int // len: 10, code: 112
+	ReturnableTaxAmounts                int // len: 10, code: 113
+	ThisPeriodReturnTaxAmounts          int // len: 10, code: 114
+	ThisPeriodTotalExcessTaxPaidAmounts int // len: 10, code: 115
+
+	reserve8               string // len: 23
+	ReportType             string // len: 1
+	reserve9               string // len: 1
+	County                 string // len: 1
+	reserve10              string // len: 6
+	BySelfOrTheOther       string // len: 1
+	ReporterID             string // len: 10
+	ReporterPhoneLocalCode string // len: 4
+	ReporterPhoneNumber    string // len: 11
+	ReporterPhoneExt       string // len: 5
+	ReporterSerialNumber   string // len: 50
+	reserve11              string // len: 92
+
+}
+
+// http://gazette.nat.gov.tw/EG_FileManager/eguploadpub/eg017152/ch04/type2/gov30/num3/images/Eg01.htm
+const (
+	TaipeiCity       = "A"
+	TaichungCity     = "B"
+	KeelungCity      = "C"
+	TainanCity       = "D"
+	KaohsiungCity    = "E"
+	NewTaipeiCity    = "F"
+	YilanCounty      = "G"
+	TaoyuanCounty    = "H"
+	ChiayiCity       = "I"
+	HsinchuCounty    = "J"
+	MiaoliCounty     = "K"
+	NantouCounty     = "M"
+	ChunghuaCounty   = "N"
+	HsinchuCity      = "O"
+	YunlinCounty     = "P"
+	ChiayiCounty     = "Q"
+	PingtungCounty   = "T"
+	HualienCounty    = "U"
+	TaitungCounty    = "V"
+	KinmenCounty     = "W"
+	PenghuCounty     = "X"
+	LienchiangCounty = "Z"
+)
+
+func ParseTXTFile(file *os.File) []*TXTRecord {
 	// len: 81
 	rowLen := 81
 	buf := make([]byte, rowLen+2, rowLen+2)
+	ret := make([]*TXTRecord, 0)
 	for {
 		n, _ := file.Read(buf)
 		if n == 0 {
 			break
 		}
-		fmt.Println(n)
-		fmt.Println(string(buf))
 		r := parseTXTRecord(buf)
-		fmt.Println(r)
-		fmt.Println(string(marshalTXTRecord(r)))
+		ret = append(ret, r)
 	}
+	return ret
 
 }
 
