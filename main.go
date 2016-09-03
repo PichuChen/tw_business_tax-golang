@@ -44,6 +44,33 @@ const (
 	EXT_營業人向法院或行政執行機關拍定或承受貨物申報進項憑證明細表資料檔 = "T09"
 )
 
+const (
+	// 進項三聯式, 電子計算機統一發票
+	FormatTriplicateBuyInvoice = 21
+	// 進項二聯式收銀機統一發票、載有稅額之其他憑證
+	FormatDuplicateRegisterBuyInvoice = 22
+	// 進項三聯式收銀機統一發票及一般稅額計算之電子發票
+	FormatTriplicateRegisterBuyInvoice = 25
+
+	// 銷項三聯式
+	FormatTriplicateSaleInvoice = 31
+)
+
+const (
+	TaxTypeTaxable      = "1"
+	TaxTypeZeroTaxRatio = "2"
+	TaxTypeTaxExempt    = "3"
+	TaxTypeNonUsed      = "D"
+	TaxTypeVoid         = "F"
+)
+
+const (
+	CreditCodeDeductibleCost      = "1"
+	CreditCodeDeductibleAssert    = "2"
+	CreditCodeNonDeductibleCost   = "3"
+	CreditCodeNonDeductibleAssert = "4"
+)
+
 type TXTRecord struct {
 	FormatCode             int    // len: 2
 	TaxSerialNumber        int    // len: 9
@@ -274,7 +301,7 @@ func parseTXTRecord(b []byte) *TXTRecord {
 	return record
 }
 
-func marshalTXTRecord(r *TXTRecord) (b []byte) {
+func MarshalTXTRecord(r *TXTRecord) (b []byte) {
 	b = make([]byte, 81+2, 81+2)
 	copy(b[0:31],
 		fmt.Sprintf("%02d%09d%07s%03d%02d% 8s",
@@ -286,7 +313,10 @@ func marshalTXTRecord(r *TXTRecord) (b []byte) {
 			r.BuyerVATNumber,
 		))
 
-	if r.FormatCode == 22 || r.FormatCode == 25 || r.FormatCode == 31 {
+	if r.FormatCode == 22 ||
+		r.FormatCode == 25 ||
+		r.FormatCode == 31 ||
+		r.FormatCode == FormatTriplicateBuyInvoice {
 		copy(b[31:73],
 			fmt.Sprintf("% 8s%2s%08s%012d%1s%010d%1s",
 				r.SalerVATNumber,
